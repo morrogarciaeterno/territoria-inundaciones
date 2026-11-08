@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Territoria | Inundaciones Argentina TEST</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+:root{--bg:#081522;--panel:#102536;--text:#eaf7ff;--muted:#93adbd;--red:#ef4444;--orange:#f59e0b;--blue:#38bdf8;--green:#22c55e}
+*{box-sizing:border-box} html,body,#map{height:100%;margin:0} body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+#map{background:#dce7ea}.top{position:absolute;z-index:1000;top:10px;left:10px;right:10px;display:flex;gap:8px;align-items:center;pointer-events:none}.brand,.status,.controls{pointer-events:auto;background:rgba(8,21,34,.93);border:1px solid #285069;border-radius:13px;box-shadow:0 8px 24px #0005}.brand{padding:9px 12px;font-weight:800}.brand span{color:#59d6ff}.status{margin-left:auto;padding:8px 11px;font-size:12px;color:#cce8f5}.panel{position:absolute;z-index:1000;left:10px;bottom:14px;width:min(360px,calc(100% - 20px));background:rgba(8,21,34,.95);border:1px solid #285069;border-radius:14px;padding:12px;box-shadow:0 8px 28px #0006}.title{font-weight:850;font-size:16px;margin-bottom:8px}.legend{display:grid;grid-template-columns:1fr 1fr;gap:7px}.chip{display:flex;align-items:center;gap:7px;background:#102536;border-radius:9px;padding:7px 8px;font-size:12px}.dot{width:13px;height:13px;border-radius:4px}.red{background:var(--red)}.orange{background:var(--orange)}.blue{background:var(--blue)}.gray{background:#94a3b8}.sep{height:1px;background:#24455a;margin:10px 0}.row{display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid #37637b;background:#123047;color:#eaf7ff;border-radius:9px;padding:7px 9px;font-weight:700;cursor:pointer}.btn.on{border-color:#58ccff;background:#0c4963}.small{font-size:11px;color:var(--muted);line-height:1.35}.warn{color:#ffd38a}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0d2231;color:#e9f7ff}.leaflet-popup-content{margin:12px 14px}.leaflet-control-attribution{font-size:9px}
+@media(max-width:640px){.brand{font-size:13px}.status{display:none}.panel{font-size:12px}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="top"><div class="brand">🌊 <span>TERRITORIA</span> · INUNDACIONES ARGENTINA <small>TEST</small></div><div class="status" id="status">Fuente: Copernicus GFM / Sentinel-1</div></div>
+<div class="panel">
+  <div class="title">Mapa simple para usuarios</div>
+  <div class="legend">
+    <div class="chip"><i class="dot red"></i>Inundación observada</div>
+    <div class="chip"><i class="dot blue"></i>Agua habitual</div>
+    <div class="chip"><i class="dot orange"></i>Riesgo / pronóstico</div>
+    <div class="chip"><i class="dot gray"></i>Sin cobertura reciente</div>
+  </div>
+  <div class="sep"></div>
+  <div class="row">
+    <button class="btn on" id="bFlood">🔴 Inundación</button>
+    <button class="btn" id="bWater">🔵 Agua habitual</button>
+    <button class="btn" id="bDemo">🧪 Demo visual</button>
+    <button class="btn" id="bGps">📍 Mi GPS</button>
+  </div>
+  <div class="sep"></div>
+  <div class="small" id="info"><b>Modo seguro:</b> no inventa detecciones. Hasta conectar el backend/API de GFM, el mapa muestra Argentina y la interfaz final. Activá “Demo visual” solo para probar el diseño.</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map=L.map('map',{zoomControl:false}).setView([-38.4,-63.6],4);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+// Límite aproximado visual del país para el TEST. No se usa para cálculos oficiales.
+const argBounds=[[-55.2,-73.7],[-21.5,-53.5]];
+L.rectangle(argBounds,{color:'#47bce5',weight:1,fill:false,dashArray:'5 8',opacity:.45}).addTo(map);
+const floodLayer=L.layerGroup().addTo(map), waterLayer=L.layerGroup(), demoLayer=L.layerGroup();
+function toggle(btn,layer){const on=map.hasLayer(layer); if(on){map.removeLayer(layer);btn.classList.remove('on')}else{layer.addTo(map);btn.classList.add('on')}}
+document.getElementById('bFlood').onclick=e=>toggle(e.currentTarget,floodLayer);
+document.getElementById('bWater').onclick=e=>toggle(e.currentTarget,waterLayer);
+document.getElementById('bDemo').onclick=e=>{toggle(e.currentTarget,demoLayer);document.getElementById('info').innerHTML=map.hasLayer(demoLayer)?'<b class="warn">DEMO VISUAL:</b> polígonos sintéticos para probar colores y popups. <b>No son inundaciones reales.</b>':'<b>Modo seguro:</b> no inventa detecciones. Hasta conectar el backend/API de GFM, el mapa muestra Argentina y la interfaz final. Activá “Demo visual” solo para probar el diseño.'};
+// Polígonos sintéticos, deliberadamente etiquetados como DEMO.
+[
+ [[-32.1,-60.9],[-32.1,-60.2],[-32.55,-60.15],[-32.65,-60.75]],
+ [[-28.2,-58.9],[-28.4,-58.15],[-28.9,-58.3],[-28.75,-59.05]]
+].forEach((p,i)=>L.polygon(p,{color:'#ef4444',fillColor:'#ef4444',fillOpacity:.38,weight:2}).bindPopup('<b>🧪 DEMO visual</b><br>No es una detección real.<br>En producción aquí aparecerá Observed Flood Extent de GFM.').addTo(demoLayer));
+document.getElementById('bGps').onclick=()=>map.locate({setView:true,maxZoom:11});
+map.on('locationfound',e=>{L.circleMarker(e.latlng,{radius:7,color:'#fff',fillColor:'#38bdf8',fillOpacity:1}).bindPopup('📍 Tu ubicación').addTo(map).openPopup()});
+map.on('locationerror',()=>alert('No se pudo obtener la ubicación. Revisá el permiso de GPS del navegador.'));
+/*
+INTEGRACIÓN REAL PENDIENTE
+--------------------------
+GFM publica Observed Flood Extent y permite descargas en GeoJSON/COG para AOI/periodos.
+Por seguridad y CORS, la integración final debería ser:
+Territoria HTML -> Worker /api/floods -> GFM API -> GeoJSON filtrado Argentina -> Leaflet.
+El HTML NO incluye credenciales ni simula datos reales.
+
+Respuesta esperada del Worker sugerida:
+{
+  "updated":"ISO_DATE",
+  "source":"Copernicus GFM / Sentinel-1",
+  "features": {"type":"FeatureCollection","features":[...]}
+}
+Luego:
+fetch('/api/floods').then(r=>r.json()).then(d=>{
+  L.geoJSON(d.features,{style:{color:'#ef4444',fillColor:'#ef4444',fillOpacity:.42,weight:1.5},
+    onEachFeature:(f,l)=>l.bindPopup(`<b>🔴 Inundación observada</b><br>Fuente: ${d.source}<br>Actualizado: ${d.updated}`)
+  }).addTo(floodLayer)
+})
+*/
+</script>
+</body>
+</html>
