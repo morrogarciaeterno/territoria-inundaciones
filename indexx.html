@@ -760,7 +760,82 @@ section.card,.pair5050,.border-stack,.tools{margin-bottom:16px}.charts{gap:12px!
 }
 </style><script src="https://cdn.jsdelivr.net/npm/geotiff@2.1.3/dist-browser/geotiff.js"></script><style>
 .cloud-shell{width:96vw;height:94vh;max-width:1500px;display:flex;flex-direction:column;background:#07111f;border:1px solid #31506d;border-radius:14px;overflow:hidden}.cloud-tools{display:flex;gap:6px;flex-wrap:wrap;padding:7px 10px;background:#0b1728;border-bottom:1px solid #293b55}.cloud-tools button{background:#10263b;border:1px solid #31506b;color:#ddecff;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:800;cursor:pointer}.cloud-tools button.active{background:#0369a1;border-color:#38bdf8}.cloud-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#020817;position:relative;overflow:hidden}.cloud-stage img{width:100%;height:100%;object-fit:contain}.cloud-meta{position:absolute;left:10px;bottom:10px;background:#07111fe8;border:1px solid #31506b;border-radius:8px;padding:6px 9px;color:#ddecff;font-size:10px}.cloud-loading{position:absolute;color:#8ea4bb;font-size:12px}.cloud-note{padding:7px 10px;background:#0b1728;color:#8ea4bb;font-size:10px;border-top:1px solid #293b55}@media(max-width:700px){.cloud-shell{width:100vw;height:100dvh;border:0;border-radius:0}.cloud-tools{padding:5px;gap:4px}.cloud-tools button{flex:1 1 46%;padding:7px 5px;font-size:9px}.cloud-note{font-size:9px;padding:5px 7px}}
-</style></head><body><main class="app">
+</style><style id="territoria-mobile-popup-fix">
+/* Territoria: ajuste aislado para popups en Android/movil. Escritorio queda intacto. */
+@media (max-width:700px){
+  #rainRadarModal.rain-radar-modal,
+  #floodModal.rain-radar-modal,
+  #cloudModal.rain-radar-modal{
+    padding:0!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+    width:100vw!important;
+    height:100dvh!important;
+  }
+  #rainRadarModal .rain-radar-shell,
+  #floodModal .rain-radar-shell,
+  #cloudModal .cloud-shell{
+    width:100vw!important;
+    max-width:none!important;
+    height:100dvh!important;
+    max-height:none!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  #rainRadarModal .rain-radar-head,
+  #floodModal .rain-radar-head,
+  #cloudModal .rain-radar-head{
+    position:relative!important;
+    z-index:30!important;
+    flex:0 0 auto!important;
+    padding:8px 10px!important;
+    min-height:58px!important;
+  }
+  #rainRadarModal .rain-radar-head strong,
+  #floodModal .rain-radar-head strong,
+  #cloudModal .rain-radar-head strong{font-size:14px!important;line-height:1.15!important}
+  #rainRadarModal .rain-radar-head .muted,
+  #floodModal .rain-radar-head .muted,
+  #cloudModal .rain-radar-head .muted{font-size:10px!important;line-height:1.15!important;margin-top:2px!important}
+  #rainRadarModal .rain-radar-head .danger,
+  #floodModal .rain-radar-head .danger,
+  #cloudModal .rain-radar-head .danger{padding:9px 10px!important;font-size:12px!important;white-space:nowrap!important}
+  #rainRadarModal .rain-radar-frame,
+  #floodModal .rain-radar-frame{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    width:100%!important;
+  }
+  /* Nubosidad: controles compactos y la imagen ocupa el resto de la pantalla. */
+  #cloudModal .cloud-tools{
+    flex:0 0 auto!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:5px!important;
+    padding:6px!important;
+  }
+  #cloudModal .cloud-tools button{min-height:36px!important;padding:6px 4px!important;font-size:11px!important}
+  #cloudModal .cloud-tools button:last-child{grid-column:1/-1!important;min-height:32px!important}
+  #cloudModal .cloud-stage{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+  }
+  #cloudModal #cloudImage{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important}
+  #cloudModal .cloud-note{flex:0 0 auto!important;padding:5px 8px!important;font-size:9px!important;line-height:1.2!important}
+  #cloudModal .cloud-meta{font-size:10px!important;max-width:calc(100vw - 20px)!important}
+}
+</style>
+</head><body><main class="app">
 <header class="card head"><div class="flex"><div style="display:flex;align-items:center;gap:14px;min-width:0"><img alt="Logo Territoria" onerror="this.style.display='none'" src="logo-territoria.png" style="width:76px;height:76px;object-fit:contain;padding:3px;border-radius:14px;background:#fff"/><div><h1 style="color:#40c6ef;margin-bottom:4px">TERRITORIA</h1><div class="muted" style="font-size:12px">Plataforma inteligente de monitoreo territorial</div><div class="muted" id="updated" style="margin-top:8px">Esperando GPS…</div></div></div><span class="online" id="systemStatus">● INICIANDO</span></div></header>
 <div class="card red" id="error" style="display:none"></div>
 <section class="status"><div class="card alert yellow" id="generalCard"><div class="general-weather"><div class="general-copy"><h2 id="generalTitle">🟡 OBTENIENDO INFORMACIÓN</h2><div id="generalText">Solicitando ubicación y modelos meteorológicos.</div><div class="own-calc" id="rainOwnDetail"><span class="own-calc-brand">TERRITORIA</span><span class="own-calc-state" id="rainOwnState">Calculando…</span><span class="own-calc-score" id="rainOwnScore">--%</span><span class="own-calc-base" id="rainBaseText">Modelo base --%</span></div><div class="early-warning" id="earlyWarning"><div class="early-warning-head"><div><div class="early-warning-title">MONITOREO DE ALERTA TEMPRANA</div><div class="early-warning-state" id="earlyWarningState">🟢 CONSULTANDO ZONA GPS</div></div></div><div class="alert-ticker" id="alertTicker"><div class="alert-ticker-track"><span class="alert-ticker-text" id="alertTickerText"></span></div></div></div></div><div class="weather-visual"><div class="weather-now-line"><div class="weather-icon-stack"><div class="weather-icon" id="weatherIcon">⏳</div><strong class="weather-label" id="weatherCondition">ESPERANDO</strong></div><strong class="weather-temp-hero" id="weatherTempHero">--°</strong></div></div></div></div><div class="card alert" id="quakeCard"><div class="flex"><b>🌋 Último sismo INPRES</b><span class="badge" id="quakeState">CARGANDO</span></div><div class="big" id="quakeMain">M --</div><div class="muted" id="quakeDetail">Esperando registro oficial…</div></div><div class="card alert" id="fireCard" onclick="openSatelliteWorkspace('VIIRS')" style="cursor:pointer"><div class="flex"><b>🔥 Radar Forestal y Campos · VIIRS</b><span class="badge" id="fireState">ESPERANDO</span></div><div class="flex" style="align-items:flex-end"><div class="big" id="fireDistance">-- km</div><strong id="fireIndex" style="color:#7dd3fc;font-size:10px">-- / --</strong></div><div class="muted" id="fireDetail">Esperando NASA FIRMS…</div><div id="fireDots" style="margin-top:7px;color:#38bdf8;letter-spacing:5px">○ ○ ○ ○</div><div class="muted" style="margin-top:4px">Muestra solo los 3 focos más cercanos dentro del radio GPS · cambia cada 10 segundos</div></div><div class="card alert" id="goesCard" onclick="openSatelliteWorkspace('GOES')" style="cursor:pointer"><div class="flex"><b>🛰️ Radar térmico directo · MODIS</b><span class="badge" id="goesCardState">ESPERANDO</span></div><div class="flex" style="align-items:flex-end"><div class="big" id="goesDistance">-- km</div><strong id="goesIndex" style="color:#7dd3fc;font-size:10px">-- / --</strong></div><div class="muted" id="goesDetail">Esperando NASA FIRMS MODIS…</div><div id="goesDots" style="margin-top:7px;color:#f59e0b;letter-spacing:5px">○ ○ ○ ○</div><div class="muted" style="margin-top:4px">Muestra solo las 3 anomalías más cercanas dentro del radio GPS · cambia cada 10 segundos</div></div><div class="card alert" id="goes19Card" onclick="openSatelliteWorkspace('ALL')" style="cursor:pointer"><div class="flex"><b>🛰️ GOES-19 · Alerta temprana</b><span class="badge" id="goes19State">ESPERANDO</span></div><div class="flex" style="align-items:flex-end"><div class="big" id="goes19Distance">-- km</div><strong id="goes19Index" style="color:#7dd3fc;font-size:10px">-- / --</strong></div><div class="muted" id="goes19Detail">Esperando ABI-L2-FDCF…</div><div id="goes19Dots" style="margin-top:7px;color:#a78bfa;letter-spacing:5px">○ ○ ○</div><div class="muted" style="margin-top:4px">Solo las 3 anomalías más cercanas dentro del radio GPS · rotación cada 10 segundos</div></div></section>
